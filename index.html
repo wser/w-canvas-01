@@ -9,21 +9,86 @@
   <body>
     <canvas id="c"></canvas>
     <script>
-      const a = document.getElementById('c');
-      a.width = innerWidth;
-      a.height = innerHeight;
-      let c = a.getContext('2d'),
+      // document.body.style.overflow = 'hidden';
+      // var canvas = document.getElementById('c');
+      // canvas.width = innerWidth;
+      // canvas.height = innerHeight;
+      // //var ctx = canvas.getContext('2d');
+      // var ballRadius = 10;
+      // var x = canvas.width / 2;
+      // var y = canvas.height - 30;
+      // var dx = 2;
+      // var dy = -2;
+
+      // function drawBall() {
+      //   ctx.beginPath();
+      //   ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+      //   ctx.fillStyle = '#0095DD';
+      //   ctx.fill();
+      //   ctx.closePath();
+      // }
+
+      // function draw() {
+      //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+      //   drawBall();
+
+      //   if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+      //     dx = -dx;
+      //   }
+      //   if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
+      //     dy = -dy;
+      //   }
+
+      //   x += dx;
+      //   y += dy;
+      // }
+
+      // setInterval(draw, 5);
+
+      document.body.style.overflow = 'hidden';
+      const canvas = document.getElementById('c');
+      let x = (canvas.width = innerWidth);
+      let y = (canvas.height = innerHeight);
+      let c = canvas.getContext('2d'),
         f = [
           [300, 100, 5, -0.2, 0],
           [300, 300, 5, 0.2, 0],
-          [300, 200, 5, 0.4, 0],
-          [300, 500, 5, -0.4, 0],
         ],
         h = -1;
-      setInterval(() => {
-        //drawing mechanism
+
+      var dx = 300;
+      var dy = -300;
+
+      function drawBall(f, b) {
+        c.beginPath();
+        c.arc(f[b][0], f[b][1], f[b][2], 0, Math.PI * 2, true);
+        c.strokeStyle =
+          'hsl(' +
+          Math.min(
+            300,
+            Math.floor(50 * Math.sqrt(f[b][3] * f[b][3] + f[b][4] * f[b][4]))
+          ) +
+          ',100%,40%)';
+        c.stroke();
+        c.closePath();
+      }
+
+      function walls(f, b) {
+        // c.clearRect(0, 0, innerWidth, innerHeight);
+        drawBall(f, b);
+        if (x + dx > canvas.width - f[b][2] || x + dx < f[b][2]) dx = -dx;
+
+        if (y + dy > canvas.height - f[b][2] || y + dy < f[b][2]) dy = -dy;
+
+        x += dx;
+        y += dy;
+      }
+
+      function ngn() {
         if (h > 0) f[h][2] += 0.1;
+
         c.clearRect(0, 0, innerWidth, innerHeight);
+
         for (let d = f.length, b = d, e; b--; ) {
           for (e = d; e--; )
             if (e != b && b != h && e != h) {
@@ -37,23 +102,19 @@
             }
           f[b][0] += f[b][3];
           f[b][1] += f[b][4];
-          c.strokeStyle =
-            'hsl(' +
-            Math.min(
-              300,
-              Math.floor(50 * Math.sqrt(f[b][3] * f[b][3] + f[b][4] * f[b][4]))
-            ) +
-            ',100%,40%)';
-          c.beginPath();
-          c.arc(f[b][0], f[b][1], f[b][2], 0, Math.PI * 2, true);
-          c.stroke();
+
+          walls(f, b);
         }
-      }, 1);
+      }
+
+      setInterval(ngn, 1);
+
       document.body.onmousedown = (d) => {
         h = f.length;
         f.push([d.clientX, d.clientY, 2, 0, 0]);
         return false;
       };
+
       document.body.onmouseup = (d) => {
         f[h][3] = (d.clientX - f[h][0]) / 100;
         f[h][4] = (d.clientY - f[h][1]) / 100;
