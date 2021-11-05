@@ -143,7 +143,6 @@
         return false;
       };
     </script> -->
-
     <!-- <script>
       document.body.style.overflow = 'hidden';
       var canvas = document.getElementById('c');
@@ -208,24 +207,16 @@
     <script>
       (function () {
         // General Variables
-        var Particle, particleCount, particles, sketch, z;
+        let particles = [];
 
-        sketch = Sketch.create();
-
-        particles = [];
-
-        particleCount = 500;
-
+        let sketch = Sketch.create();
         sketch.mouse.x = sketch.width / 2;
-
         sketch.mouse.y = sketch.height / 2;
-
         sketch.strokeStyle = 'hsla(200, 50%, 50%, .4)';
-
-        sketch.globalCompositeOperation = 'lighter';
+        sketch.globalCompositeOperation = 'lighter'; //'luminosity';
 
         // Particle Constructor
-        Particle = function () {
+        let Particle = function () {
           this.x = random(sketch.width);
           this.y = random(sketch.height, sketch.height * 2);
           this.vx = 0;
@@ -233,7 +224,7 @@
           this.radius = this.baseRadius = 1;
           this.maxRadius = 50;
           this.threshold = 150;
-          return (this.hue = random(180, 240));
+          this.hue = random(180, 240);
         };
 
         // Particle Prototype
@@ -256,8 +247,8 @@
             }
 
             // Adjust Velocity
-            this.vx += (random(100) - 50) / 1000;
-            this.vy -= random(1, 20) / 10000;
+            this.vx += (random(100) - 50) / 1e3;
+            this.vy -= random(1, 20) / 1e4;
 
             // Apply Velocity
             this.x += this.vx;
@@ -272,50 +263,39 @@
               this.x = random(sketch.width);
               this.y = random(sketch.height + this.maxRadius, sketch.height * 2);
               this.vx = 0;
-              return (this.vy = -random(1, 10) / 5);
+              this.vy = -random(1, 10) / 5;
             }
           },
           render: function () {
             sketch.beginPath();
             sketch.arc(this.x, this.y, this.radius, 0, TWO_PI);
             sketch.closePath();
-            sketch.fillStyle = 'hsla(' + this.hue + ', 60%, 40%, .35)';
-            sketch.fill();
-            return sketch.stroke();
+            // sketch.fillStyle = 'hsla(' + this.hue + ', 60%, 40%, .35)';
+            // sketch.fill();
+            sketch.stroke();
           },
         };
 
         // Create Particles
-        z = particleCount;
-
-        while (z--) {
-          particles.push(new Particle());
-        }
+        let z = 500;
+        while (z--) particles.push(new Particle());
 
         // Sketch Clear
-        sketch.clear = function () {
-          return sketch.clearRect(0, 0, sketch.width, sketch.height);
-        };
+        sketch.clear = () => sketch.clearRect(0, 0, sketch.width, sketch.height);
 
         // Sketch Update
         sketch.update = function () {
-          var i, results;
-          i = particles.length;
-          results = [];
-          while (i--) {
-            results.push(particles[i].update());
-          }
+          let i = particles.length;
+          let results = [];
+          while (i--) results.push(particles[i].update());
           return results;
         };
 
         // Sketch Draw
         sketch.draw = function () {
-          var i, results;
-          i = particles.length;
-          results = [];
-          while (i--) {
-            results.push(particles[i].render());
-          }
+          let i = particles.length;
+          let results = [];
+          while (i--) results.push(particles[i].render());
           return results;
         };
       }.call(this));
