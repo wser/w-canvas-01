@@ -8,47 +8,49 @@
   </head>
   <body>
     <canvas id="c"></canvas>
-    <script>
-      // document.body.style.overflow = 'hidden';
-      // var canvas = document.getElementById('c');
-      // canvas.width = innerWidth;
-      // canvas.height = innerHeight;
-      // //var ctx = canvas.getContext('2d');
-      // var ballRadius = 10;
-      // var x = canvas.width / 2;
-      // var y = canvas.height - 30;
-      // var dx = 2;
-      // var dy = -2;
+    <!-- <script>
+      document.body.style.overflow = 'hidden';
+      var canvas = document.getElementById('c');
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+      //var ctx = canvas.getContext('2d');
+      var ballRadius = 10;
+      var x = canvas.width / 2;
+      var y = canvas.height - 30;
+      var dx = 2;
+      var dy = -2;
 
-      // function drawBall() {
-      //   ctx.beginPath();
-      //   ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-      //   ctx.fillStyle = '#0095DD';
-      //   ctx.fill();
-      //   ctx.closePath();
-      // }
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#0095DD';
+        ctx.fill();
+        ctx.closePath();
+      }
 
-      // function draw() {
-      //   ctx.clearRect(0, 0, canvas.width, canvas.height);
-      //   drawBall();
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
 
-      //   if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
-      //     dx = -dx;
-      //   }
-      //   if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
-      //     dy = -dy;
-      //   }
+        if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+          dx = -dx;
+        }
+        if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
+          dy = -dy;
+        }
 
-      //   x += dx;
-      //   y += dy;
-      // }
+        x += dx;
+        y += dy;
+      }
 
-      // setInterval(draw, 5);
-
+      setInterval(draw, 5);
+</script> -->
+    <!-- <script>
       document.body.style.overflow = 'hidden';
       const canvas = document.getElementById('c');
-      let x = (canvas.width = innerWidth);
-      let y = (canvas.height = innerHeight);
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+
       let c = canvas.getContext('2d'),
         f = [
           [300, 100, 5, -0.2, 0],
@@ -56,8 +58,8 @@
         ],
         h = -1;
 
-      var dx = 300;
-      var dy = -300;
+      var dx = 2;
+      var dy = -2;
 
       function drawBall(f, b) {
         c.beginPath();
@@ -74,8 +76,10 @@
       }
 
       function walls(f, b) {
+        var x = canvas.width / 2;
+        var y = canvas.height - 30;
         // c.clearRect(0, 0, innerWidth, innerHeight);
-        drawBall(f, b);
+
         if (x + dx > canvas.width - f[b][2] || x + dx < f[b][2]) dx = -dx;
 
         if (y + dy > canvas.height - f[b][2] || y + dy < f[b][2]) dy = -dy;
@@ -87,10 +91,10 @@
       function ngn() {
         if (h > 0) f[h][2] += 0.1;
 
-        c.clearRect(0, 0, innerWidth, innerHeight);
+        c.clearRect(0, 0, canvas.width, canvas.height);
 
         for (let d = f.length, b = d, e; b--; ) {
-          for (e = d; e--; )
+          for (e = d; e--; ) {
             if (e != b && b != h && e != h) {
               let i = f[e][0] - f[b][0],
                 j = f[e][1] - f[b][1],
@@ -100,10 +104,13 @@
               f[b][3] += (i / k) * g;
               f[b][4] += (j / k) * g;
             }
+          }
           f[b][0] += f[b][3];
           f[b][1] += f[b][4];
 
           walls(f, b);
+
+          drawBall(f, b);
         }
       }
 
@@ -121,6 +128,67 @@
         h = -1;
         return false;
       };
+    </script> -->
+
+    <script>
+      document.body.style.overflow = 'hidden';
+      var canvas = document.getElementById('c');
+      var context = canvas.getContext('2d');
+
+      var width = (canvas.width = innerWidth / 2);
+      var height = (canvas.height = innerHeight / 2);
+
+      var ball = {
+        x: 100,
+        y: 100,
+        radius: 25,
+        xSpeed: 3,
+        ySpeed: 3,
+        draw: function (ctx) {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+          ctx.fill();
+        },
+        move: function () {
+          this.x += this.xSpeed;
+          this.y += this.ySpeed;
+        },
+      };
+
+      function draw() {
+        context.clearRect(0, 0, width, height);
+        context.strokeRect(0, 0, width, height);
+
+        ball.move();
+
+        // right
+        if (ball.x + ball.radius >= width) {
+          ball.x = width - ball.radius;
+          ball.xSpeed = -ball.xSpeed;
+        }
+
+        // left
+        if (ball.x - ball.radius <= 0) {
+          ball.x = ball.radius;
+          ball.xSpeed = -ball.xSpeed;
+        }
+
+        // down
+        if (ball.y + ball.radius >= height) {
+          ball.y = height - ball.radius;
+          ball.ySpeed = -ball.ySpeed;
+        }
+
+        // up
+        if (ball.y - ball.radius <= 0) {
+          ball.y = ball.radius;
+          ball.ySpeed = -ball.ySpeed;
+        }
+
+        ball.draw(context);
+      }
+
+      setInterval(draw, 10);
     </script>
   </body>
 </html>
