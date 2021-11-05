@@ -5,9 +5,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+
+    <style>
+      canvas {
+        background: #023;
+        display: block;
+      }
+    </style>
   </head>
   <body>
-    <canvas id="c"></canvas>
+    <!-- <canvas id="c"></canvas> -->
     <!-- <script>
       document.body.style.overflow = 'hidden';
       var canvas = document.getElementById('c');
@@ -130,7 +143,7 @@
       };
     </script> -->
 
-    <script>
+    <!-- <script>
       document.body.style.overflow = 'hidden';
       var canvas = document.getElementById('c');
       var context = canvas.getContext('2d');
@@ -189,6 +202,321 @@
       }
 
       setInterval(draw, 10);
+    </script> -->
+    <script src="https://cdn.jsdelivr.net/npm/sketch-js@1.1.3/js/sketch.min.js"></script>
+
+    <!-- partial -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script> -->
+    <!-- <script src="https://rawgithub.com/soulwire/sketch.js/master/js/sketch.min.js"></script> -->
+    <script>
+      (function () {
+        // General Variables
+        var Particle, particleCount, particles, sketch, z;
+
+        sketch = Sketch.create();
+
+        particles = [];
+
+        particleCount = 500;
+
+        sketch.mouse.x = sketch.width / 2;
+
+        sketch.mouse.y = sketch.height / 2;
+
+        sketch.strokeStyle = 'hsla(200, 50%, 50%, .4)';
+
+        sketch.globalCompositeOperation = 'lighter';
+
+        // Particle Constructor
+        Particle = function () {
+          this.x = random(sketch.width);
+          this.y = random(sketch.height, sketch.height * 2);
+          this.vx = 0;
+          this.vy = -random(1, 10) / 5;
+          this.radius = this.baseRadius = 1;
+          this.maxRadius = 50;
+          this.threshold = 150;
+          return (this.hue = random(180, 240));
+        };
+
+        // Particle Prototype
+        Particle.prototype = {
+          update: function () {
+            var dist, distx, disty, radius;
+            // Determine Distance From Mouse
+            distx = this.x - sketch.mouse.x;
+            disty = this.y - sketch.mouse.y;
+            dist = sqrt(distx * distx + disty * disty);
+
+            // Set Radius
+            if (dist < this.threshold) {
+              radius =
+                this.baseRadius +
+                ((this.threshold - dist) / this.threshold) * this.maxRadius;
+              this.radius = radius > this.maxRadius ? this.maxRadius : radius;
+            } else {
+              this.radius = this.baseRadius;
+            }
+
+            // Adjust Velocity
+            this.vx += (random(100) - 50) / 1000;
+            this.vy -= random(1, 20) / 10000;
+
+            // Apply Velocity
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Check Bounds
+            if (
+              this.x < -this.maxRadius ||
+              this.x > sketch.width + this.maxRadius ||
+              this.y < -this.maxRadius
+            ) {
+              this.x = random(sketch.width);
+              this.y = random(sketch.height + this.maxRadius, sketch.height * 2);
+              this.vx = 0;
+              return (this.vy = -random(1, 10) / 5);
+            }
+          },
+          render: function () {
+            sketch.beginPath();
+            sketch.arc(this.x, this.y, this.radius, 0, TWO_PI);
+            sketch.closePath();
+            sketch.fillStyle = 'hsla(' + this.hue + ', 60%, 40%, .35)';
+            sketch.fill();
+            return sketch.stroke();
+          },
+        };
+
+        // Create Particles
+        z = particleCount;
+
+        while (z--) {
+          particles.push(new Particle());
+        }
+
+        // Sketch Clear
+        sketch.clear = function () {
+          return sketch.clearRect(0, 0, sketch.width, sketch.height);
+        };
+
+        // Sketch Update
+        sketch.update = function () {
+          var i, results;
+          i = particles.length;
+          results = [];
+          while (i--) {
+            results.push(particles[i].update());
+          }
+          return results;
+        };
+
+        // Sketch Draw
+        sketch.draw = function () {
+          var i, results;
+          i = particles.length;
+          results = [];
+          while (i--) {
+            results.push(particles[i].render());
+          }
+          return results;
+        };
+      }.call(this));
     </script>
+    <!-- <script>
+      document.body.style.overflow = 'hidden';
+      (function () {
+        var Bug, Food;
+
+        Bug = class Bug {
+          constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.vx = 0;
+            this.vy = 0;
+            this.radius = 1;
+            this.spurt = 0.5;
+            this.color = '#fff';
+            this.hasTarget = false;
+            this;
+          }
+
+          update(ctx, index, ndt) {
+            var closestTarget, dist, dx, dy, food, i, lowestDist, target;
+            this.hasTarget = false;
+            if (ctx.food.length) {
+              lowestDist = 999999;
+              closestTarget = null;
+              i = ctx.food.length;
+              while (i--) {
+                food = ctx.food[i];
+                dx = this.x - food.x;
+                dy = this.y - food.y;
+                dist = sqrt(dx * dx + dy * dy);
+                if (dist < lowestDist) {
+                  lowestDist = dist;
+                  closestTarget = i;
+                }
+              }
+              target = ctx.food[closestTarget];
+              dx = this.x - target.x;
+              dy = this.y - target.y;
+              dist = sqrt(dx * dx + dy * dy);
+              if (dist < target.threshold + target.radius && target.active) {
+                this.hasTarget = true;
+                if (dist < target.radius * (target.life / target.radius) + 5) {
+                  target.life -= 0.004;
+                }
+              }
+            }
+            if (this.hasTarget) {
+              this.vx += random(-0.2, 0.2) * this.spurt;
+              this.vy += random(-0.2, 0.2) * this.spurt;
+              this.vx -= dx / 500;
+              this.vy -= dy / 500;
+            } else {
+              this.vx += random(-0.2, 1) * this.spurt;
+              this.vy += random(-0.2, 0.2) * this.spurt;
+            }
+            this.x += this.vx * ndt;
+            this.y += this.vy * ndt;
+            this.vx *= 0.95;
+            this.vy *= 0.95;
+            if (this.spurt > 0.5) {
+              this.spurt -= 0.1;
+            }
+            if (this.spurt <= 0.5 && !floor(random(1000))) {
+              return (this.spurt = random(1, 4));
+            }
+          }
+
+          wrap(ctx) {
+            if (!this.hasTarget) {
+              if (this.x > ctx.width + this.radius) {
+                this.x = -this.radius;
+              } else if (this.x < -this.radius) {
+                this.x = ctx.width + this.radius;
+              }
+              if (this.y > ctx.height + this.radius) {
+                return (this.y = -this.radius);
+              } else if (this.y < -this.radius) {
+                return (this.y = ctx.height + this.radius);
+              }
+            }
+          }
+        };
+
+        Food = class Food {
+          constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.growthRadius = 0.0001;
+            this.radius = random(20, 50);
+            this.life = this.radius;
+            this.threshold = 50;
+            this.active = false;
+            this;
+          }
+
+          update(ctx, index, ndt) {
+            if (!this.active) {
+              this.growthRadius += 1;
+              if (this.growthRadius >= this.radius) {
+                this.active = true;
+              }
+            }
+            if (this.life <= 0) {
+              return ctx.food.splice(index, 1);
+            }
+          }
+        };
+
+        Sketch.create({
+          setup: function () {
+            var i;
+            this.tick = 0;
+            this.mouse.x = this.width / 2;
+            this.mouse.y = this.height / 2;
+            this.food = function () {
+              var j, results;
+              results = [];
+              for (i = j = 0; j <= 0; i = ++j) {
+                results.push(new Food(random(this.width), random(this.height)));
+              }
+              return results;
+            }.call(this);
+            return (this.bugs = function () {
+              var j, results;
+              results = [];
+              for (i = j = 0; j <= 2000; i = ++j) {
+                results.push(new Bug(0, random(this.height)));
+              }
+              return results;
+            }.call(this));
+          },
+          mousedown: function () {
+            return this.food.push(new Food(this.mouse.x, this.mouse.y));
+          },
+          update: function () {
+            var i, results;
+            this.ndt = max(0.001, this.dt / (1000 / 60));
+            this.tick++;
+            if (this.tick % 50 === 0) {
+              this.food.push(new Food(random(this.width), random(this.height)));
+            }
+            i = this.food.length;
+            while (i--) {
+              this.food[i].update(this, i, this.ndt);
+            }
+            i = this.bugs.length;
+            results = [];
+            while (i--) {
+              this.bugs[i].wrap(this);
+              results.push(this.bugs[i].update(this, i, this.ndt));
+            }
+            return results;
+          },
+          draw: function () {
+            var bug, food, i;
+            this.fillStyle = '#d33';
+            i = this.food.length;
+            while (i--) {
+              this.beginPath();
+              food = this.food[i];
+              if (food.active) {
+                this.arc(
+                  food.x,
+                  food.y,
+                  max(0.0001, food.radius * (food.life / food.radius)),
+                  0,
+                  TWO_PI
+                );
+              } else {
+                this.arc(food.x, food.y, food.growthRadius, 0, TWO_PI);
+              }
+              this.fill();
+            }
+            this.beginPath();
+            this.fillStyle = '#fff';
+            i = this.bugs.length;
+            while (i--) {
+              bug = this.bugs[i];
+              this.rect(~~bug.x, ~~bug.y, 1, 1);
+            }
+            this.fill();
+            this.beginPath();
+            this.arc(
+              this.mouse.x,
+              this.mouse.y,
+              10 - cos(this.millis / 100) * 2,
+              0,
+              TWO_PI
+            );
+            this.strokeStyle = '#d33';
+            return this.stroke();
+          },
+        });
+      }.call(this));
+    </script> -->
   </body>
 </html>
